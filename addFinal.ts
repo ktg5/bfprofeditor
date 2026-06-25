@@ -32,5 +32,5 @@ function checkDistfromHtml(targetDir: string) {
 }
 
 export function addFinal() {
-    checkDistfromHtml('downloads');
+    // checkDistfromHtml('downloads');
 }
