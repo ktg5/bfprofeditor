@@ -1,9 +1,10 @@
 @use "sass:map";
+@use "sass:color";
 
 
 // map
 $colors: (
-    accent: #000,
+    
 );
 
 // get colors from the colors var
@@ -13,4 +14,37 @@ $colors: (
         @return map.get($colors, $key);
     }
     @error "Unknown color `#{$key}`. Available colors: #{map.keys($colors)}";
+}
+
+
+// themes depending on bf version
+$themes: (
+    'default': #e8749b,
+    '4':  #f57d38,
+    '1': #f4a01c,
+    '2042': #59f7e1,
+    '6': #ffdc00,
+);
+
+// generate a theme block for a given accent color
+@mixin theme-vars($accent) {
+    $lightness: color.channel($accent, "lightness", $space: hsl);
+    $contrast: if($lightness > 50%, #111, #fff);
+
+    --accent:          #{$accent};
+    --accent-contrast: #{$contrast};
+    --accent-hover:    #{color.adjust($accent, $lightness: -8%)};
+    --accent-muted:    #{color.adjust($accent, $lightness: 30%, $saturation: -20%)};
+}
+
+// set default
+:root {
+    @include theme-vars(map.get($themes, 'default'));
+}
+
+// alternate themes via attribute on body (or any element)
+@each $name, $color in $themes {
+    [data-theme="#{$name}"] {
+        @include theme-vars($color);
+    }
 }

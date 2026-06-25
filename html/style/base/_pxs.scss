@@ -1,9 +1,18 @@
 @use "sass:map";
 
 
+$text-size: max(24px, min(2.5vh, 2vw));
 // map
 $pxs: (
-    topbarHeight: 2vh,
+    text-size: $text-size,
+    text-size-alt: calc($text-size / 1.5),
+    title-size: max(42px, min(4vh, 4vw)),
+    title-offset: max(14px, min(1.4vh, 1.5vw)),
+
+    btn-size: max(52px, min(5vh, 5vw)),
+    btn-padding: max(4px, max(1vh, 1vw)),
+
+    sidenav-categories-padding: max(4px, max(.5vh, .5vw)),
 );
 
 // get pxs from the pxs var
@@ -12,5 +21,5 @@ $pxs: (
     @if map.has-key($pxs, $key) {
         @return map.get($pxs, $key);
     }
-    @error "Unknown color `#{$key}`. Available colors: #{map.keys($pxs)}";
+    @error "Unknown pxs value `#{$key}`. Available pxs values: #{map.keys($pxs)}";
 }

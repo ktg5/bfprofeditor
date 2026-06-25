@@ -1,5 +1,6 @@
 profsaves/
-
+stage/
+dist/
 
 
 # Logs
@@ -84,7 +85,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 .output
 
 # Gatsby files

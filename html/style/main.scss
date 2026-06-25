@@ -1,7 +1,203 @@
 @use "./base/index.scss" as *;
 
 
+:root {
+    --btnsize: #{gPxs(btn-size)};
+
+    --background: #000;
+    --text-color: #fff;
+    --text-color-alt: #777;
+}
+
+
 * {
     scrollbar-color: rgb(255 255 255 / 20%) rgb(0 0 0 / 20%);
     -webkit-user-select: none;
+    text-transform: uppercase;
+}
+
+body {
+    background: var(--background);
+    color: var(--text-color);
+    margin: 0;
+    font-family: gFont('normal');
+    font-size: gPxs(text-size);
+
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-smooth: never;
+}
+
+input, button {
+    appearance: none;
+    -webkit-appearance: none;
+    border: none;
+    outline: none;
+    background: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    box-sizing: border-box;
+}
+
+button {
+    cursor: pointer;
+}
+
+input[type="file"] {
+    color: var(--text-color-alt);
+    text-align: end;
+    cursor: pointer;
+    font-size: gPxs(text-size-alt);
+
+    &::file-selector-button {
+        appearance: none;
+        -webkit-appearance: none;
+        color: var(--text-color) !important;
+        border: none;
+        outline: none;
+        background: none;
+        padding: 0;
+        margin: 0;
+        font: inherit;
+        font-size: gPxs(text-size);
+        color: inherit;
+        text-transform: uppercase;
+    }
+}
+
+[hide] {
+    display: none;
+}
+
+
+.img-container {
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+}
+
+.menu-category {
+    display: flex;
+
+    input {
+        height: unset !important;
+    }
+
+    .menu-btn {
+        min-width: var(--btnsize);
+        height: var(--btnsize);
+        align-content: center;
+
+        &:hover {
+            background: var(--accent);
+            color: var(--accent-contrast);
+
+            input[type="file"]::file-selector-button {
+                color: var(--accent-contrast) !important;
+            }
+        }
+
+        .display {
+            display: flex;
+            padding: 0 gPxs(btn-padding);
+        }
+    }
+}
+
+
+
+#sidenav {
+    position: absolute;
+    left: 0%;
+    bottom: 0;
+    height: calc(100vh - var(--btnsize));
+    background: #000;
+    color: #fff;
+    transition: left gTransMs();
+
+    &[hide] {
+        display: block;
+        left: -100%;
+
+        &::after {
+            content: '';
+            display: block;
+            background: #000;
+            opacity: .5;
+        }
+    }
+
+    .menu-category-container {
+        padding: gPxs(sidenav-categories-padding);
+
+        .menu-category {
+            flex-direction: column;
+
+            .menu-category-title {
+                color: var(--text-color-alt);
+                font-size: gPxs(text-size-alt);
+                padding-bottom: calc(gPxs(btn-padding) / 4);
+            }
+            
+            .menu-btn {
+                text-align: left;
+            }
+        }
+    }
+}
+
+
+#topbar {
+    display: flex;
+    position: relative;
+    height: var(--btnsize);
+
+    .menu-category-container {
+        display: flex;
+
+
+        &[align="center"] {
+            position: absolute;
+            inset: 0;
+            margin: auto;
+            width: fit-content;
+        }
+
+        &[align="right"] {
+            position: absolute;
+            right: 0;
+            margin: auto;
+            width: fit-content;
+        }
+
+        .menu-logo-container {
+            --titlesize: #{gPxs(title-size)};
+
+            background: #fff;
+            color: #000;
+            padding: 0 gPxs(btn-padding);
+            height: 100%;
+            font-family: gFont(logo);
+            font-size: var(--titlesize);
+            line-height: calc(var(--titlesize) + gPxs(title-offset));
+            align-content: center;
+            text-transform: uppercase;
+
+            .menu-logo {
+                display: flex;
+                height: 100%;
+            }
+        }
+    }
+}
+
+
+.content-container {
+    background: #333;
+    width: 100vw;
+    height: calc(100dvh - var(--btnsize));
 }

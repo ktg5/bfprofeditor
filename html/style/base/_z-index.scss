@@ -1,1 +1,13 @@
+#sidenav {
+    .active {
+        z-index: 10;
 
+        :after {
+            z-index: 9;
+        }
+    }
+}
+
+#popups {
+    z-index: 100;
+}

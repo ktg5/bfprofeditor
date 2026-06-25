@@ -22,8 +22,8 @@ export type ProfSetting = {
     value: string;
     isBlob: boolean;
 
-    setSettingValue: typeof setSettingValue,
-    setSettingBytes: typeof setSettingBytes,
+    setSettingString: Function,
+    setSettingBytes: Function,
 
     _tag: Uint8Array;
     _rawName: Uint8Array;   // [4-byte name_length LE32][name bytes incl. null]
@@ -37,17 +37,6 @@ type BFSection = {
     entries: ProfSetting[];
 };
 
-
-function setSettingValue(setting: ProfSetting, value: string): void {
-    setting.value = value;
-}
-
-function setSettingBytes(setting: ProfSetting, bytes: Uint8Array): void {
-    const end = bytes.length > 0 && bytes[bytes.length - 1] === 0x00
-        ? bytes.length - 1
-        : bytes.length;
-    setting.value = new TextDecoder('ascii').decode(bytes.subarray(0, end));
-}
 
 function arrayEquals(a: Uint8Array, b: Uint8Array): boolean {
     if (a.length !== b.length) return false;
@@ -103,33 +92,62 @@ export class BFPROF {
         const name = this.decoder.decode(this.buffer.subarray(nameDataStart, nameDataEnd - 1));
         this.offset = nameDataEnd;
 
+        // Make return
+        let entry = {
+            name,
+            typeId: 0x05,
+            value: '',
+            isBlob: true,
+            setSettingString: (string: string) => {
+                entry.value = string;
+                const enc = this.encoder.encode(string);
+                const raw = new Uint8Array(enc.length + 1);
+                raw.set(enc);
+                entry._rawValue = raw;
+            },
+            setSettingBytes: (bytes: Uint8Array) => {
+                const end = bytes.length > 0 && bytes[bytes.length - 1] === 0x00
+                    ? bytes.length - 1
+                    : bytes.length;
+                entry.value = new TextDecoder('ascii').decode(bytes.subarray(0, end));
+                entry._rawValue = bytes as Uint8Array<ArrayBuffer>;
+            },
+            _tag,
+            _rawName,
+            _typeTag: new Uint8Array(0),
+            _rawValue: new Uint8Array(0),
+        };
+
+
+
         // tag=0x05 means inline-blob: [name_len][name][value_len][value_bytes], no separate type_tag.
         // BF4's PresenceStateTelemetryToken uses this format.
         if (tagValue === 0x05) {
             const valueStart = this.offset;
             const valueLen = this.readLE32();
             this.offset += valueLen;
-            const _rawValue = this.buffer.subarray(valueStart, this.offset) as Uint8Array;
-            return { name, typeId: 0x05, value: '', isBlob: true, setSettingValue, setSettingBytes, _tag, _rawName, _typeTag: new Uint8Array(0), _rawValue };
+            entry._rawValue = this.buffer.subarray(valueStart, this.offset) as Uint8Array<ArrayBuffer>;
+
+            return entry;
         }
 
         // type_tag (4 bytes LE32, byte 0 = type ID)
         const typeTagStart = this.offset;
         this.readLE32();
-        const _typeTag = this.buffer.subarray(typeTagStart, this.offset) as Uint8Array;
-        const typeId = this.buffer[typeTagStart];
+        entry._typeTag = this.buffer.subarray(typeTagStart, this.offset) as Uint8Array<ArrayBuffer>;
+        entry.typeId = this.buffer[typeTagStart];
 
         let value = "";
         let isBlob = false;
-        let _rawValue: Uint8Array;
+        let _rawValue: Uint8Array<ArrayBuffer>;
 
-        if (typeId === 0x05 && this.version !== '6') {
+        if (entry.typeId === 0x05 && this.version !== '6') {
             // Binary blob (BF4/BF1/BF2042 only): 4-byte explicit value_length followed by raw bytes.
             // In BF6 hash-prefixed sections, type 0x05 is a null-terminated integer string instead.
             const valueStart = this.offset;
             const valueLen = this.readLE32();
             this.offset += valueLen;
-            _rawValue = this.buffer.subarray(valueStart, this.offset) as Uint8Array;
+            _rawValue = this.buffer.subarray(valueStart, this.offset) as Uint8Array<ArrayBuffer>;
             isBlob = true;
         } else {
             // Null-terminated ASCII value
@@ -138,11 +156,15 @@ export class BFPROF {
                 this.offset++;
             }
             this.offset++; // consume null terminator
-            _rawValue = this.buffer.subarray(valueStart, this.offset) as Uint8Array;
+            _rawValue = this.buffer.subarray(valueStart, this.offset) as Uint8Array<ArrayBuffer>;
             value = this.decoder.decode(this.buffer.subarray(valueStart, this.offset - 1));
         }
 
-        return { name, typeId, value, isBlob, setSettingValue, setSettingBytes, _tag, _rawName, _typeTag, _rawValue };
+        entry.isBlob = isBlob;
+        entry.value = value;
+        entry._rawValue = _rawValue;
+
+        return entry;
     }
 
     public parse(): ProfSetting[] {
