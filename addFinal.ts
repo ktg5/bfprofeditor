@@ -3,6 +3,7 @@ import fs from 'fs';
 import config from "./config.json";
 
 
+// @ts-ignore
 function checkDistfromHtml(targetDir: string) {
     const distTarget = `${config.outDir}/${targetDir}`;
     const distTargetList = fs.readdirSync(distTarget);
