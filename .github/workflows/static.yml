@@ -28,7 +28,7 @@ jobs:
       - name: Deploy to GitHub Pages subdirectory
         uses: peaceiris/actions-gh-pages@v4
         with:
-          github_token: ${{ secrets.CROSS_REPO_PAT }}
+          personal_token: ${{ secrets.CROSS_REPO_PAT }}
           external_repository: ktg5/ktg5.github.io
           publish_dir: ./dist
           destination_dir: bfprofeditor
